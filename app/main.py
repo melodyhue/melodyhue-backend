@@ -25,16 +25,13 @@ logging.basicConfig(level=log_level, format="%(asctime)s - %(levelname)s - %(mes
 
 app = FastAPI(title="MelodyHue API", version=os.getenv("APP_VERSION", "4.4.5"))
 
-# ── Public API CORS: /infos, /color, /overlay → Access-Control-Allow-Origin: * ──
+# ── Public API CORS: /infos, /color → Access-Control-Allow-Origin: * ──
 _PUBLIC_PREFIXES = ("/infos/", "/color/")
 
 
 def _is_public_path(path: str) -> bool:
-    """Match /infos/*, /color/*, and /overlay/* but NOT /overlays/*."""
-    if any(path.startswith(p) for p in _PUBLIC_PREFIXES):
-        return True
-    # /overlay/{id} (singular) but not /overlays/...
-    return path.startswith("/overlay/") and not path.startswith("/overlays/")
+    """Match /infos/* and /color/* only."""
+    return any(path.startswith(p) for p in _PUBLIC_PREFIXES)
 
 
 class _PublicAPICORSMiddleware:
