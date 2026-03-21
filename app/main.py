@@ -25,7 +25,7 @@ from .utils.database import create_all
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=log_level, format="%(asctime)s - %(levelname)s - %(message)s")
 
-app = FastAPI(title="MelodyHue API", version=os.getenv("APP_VERSION", "4.4.3"))
+app = FastAPI(title="MelodyHue API", version=os.getenv("APP_VERSION", "4.4.4"))
 
 # ── Public API CORS: /infos, /color, /overlay → Access-Control-Allow-Origin: * ──
 _PUBLIC_PREFIXES = ("/infos/", "/color/", "/overlay/")
