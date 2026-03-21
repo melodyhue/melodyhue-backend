@@ -3,9 +3,7 @@ import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-from starlette.responses import Response
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from .routes import (
     public,
     auth,
@@ -39,27 +37,60 @@ def _is_public_path(path: str) -> bool:
     return path.startswith("/overlay/") and not path.startswith("/overlays/")
 
 
-class _PublicAPICORSMiddleware(BaseHTTPMiddleware):
-    """Allow any origin on public read-only API endpoints."""
+class _PublicAPICORSMiddleware:
+    """Pure ASGI middleware: inject Access-Control-Allow-Origin: * on public endpoints only.
+    Does NOT wrap non-public routes, so it cannot interfere with cookies or streaming.
+    """
 
-    async def dispatch(self, request: Request, call_next):  # type: ignore[override]
-        is_public = _is_public_path(request.url.path)
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
 
-        if is_public and request.method == "OPTIONS":
-            response = Response(status_code=204)
-            response.headers["Access-Control-Allow-Origin"] = "*"
-            response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-            response.headers["Access-Control-Max-Age"] = "86400"
-            return response
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
 
-        response = await call_next(request)
+        path: str = scope.get("path", "")
+        if not _is_public_path(path):
+            # Not a public route → pass through without touching anything
+            await self.app(scope, receive, send)
+            return
 
-        if is_public:
-            response.headers["Access-Control-Allow-Origin"] = "*"
-            response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        method = scope.get("method", "GET")
 
-        return response
+        # Handle OPTIONS preflight for public routes
+        if method == "OPTIONS":
+            headers = [
+                (b"access-control-allow-origin", b"*"),
+                (b"access-control-allow-methods", b"GET, OPTIONS"),
+                (b"access-control-allow-headers", b"*"),
+                (b"access-control-max-age", b"86400"),
+                (b"content-length", b"0"),
+            ]
+            await send(
+                {"type": "http.response.start", "status": 204, "headers": headers}
+            )
+            await send({"type": "http.response.body", "body": b""})
+            return
+
+        # For GET etc., intercept response headers to inject CORS *
+        async def send_with_cors(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = [
+                    (k, v)
+                    for k, v in message.get("headers", [])
+                    if k.lower()
+                    not in (
+                        b"access-control-allow-origin",
+                        b"access-control-allow-credentials",
+                    )
+                ]
+                headers.append((b"access-control-allow-origin", b"*"))
+                headers.append((b"access-control-allow-methods", b"GET, OPTIONS"))
+                message["headers"] = headers
+            await send(message)
+
+        await self.app(scope, receive, send_with_cors)
 
 
 # CORS (configurable)
