@@ -3,7 +3,6 @@ import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from .routes import (
     public,
     auth,
@@ -25,71 +24,6 @@ logging.basicConfig(level=log_level, format="%(asctime)s - %(levelname)s - %(mes
 
 app = FastAPI(title="MelodyHue API", version=os.getenv("APP_VERSION", "4.4.5"))
 
-# ── Public API CORS: /infos, /color → Access-Control-Allow-Origin: * ──
-_PUBLIC_PREFIXES = ("/infos/", "/color/")
-
-
-def _is_public_path(path: str) -> bool:
-    """Match /infos/* and /color/* only."""
-    return any(path.startswith(p) for p in _PUBLIC_PREFIXES)
-
-
-class _PublicAPICORSMiddleware:
-    """Pure ASGI middleware: inject Access-Control-Allow-Origin: * on public endpoints only.
-    Does NOT wrap non-public routes, so it cannot interfere with cookies or streaming.
-    """
-
-    def __init__(self, app: ASGIApp) -> None:
-        self.app = app
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
-        path: str = scope.get("path", "")
-        if not _is_public_path(path):
-            # Not a public route → pass through without touching anything
-            await self.app(scope, receive, send)
-            return
-
-        method = scope.get("method", "GET")
-
-        # Handle OPTIONS preflight for public routes
-        if method == "OPTIONS":
-            headers = [
-                (b"access-control-allow-origin", b"*"),
-                (b"access-control-allow-methods", b"GET, OPTIONS"),
-                (b"access-control-allow-headers", b"*"),
-                (b"access-control-max-age", b"86400"),
-                (b"content-length", b"0"),
-            ]
-            await send(
-                {"type": "http.response.start", "status": 204, "headers": headers}
-            )
-            await send({"type": "http.response.body", "body": b""})
-            return
-
-        # For GET etc., intercept response headers to inject CORS *
-        async def send_with_cors(message: Message) -> None:
-            if message["type"] == "http.response.start":
-                headers = [
-                    (k, v)
-                    for k, v in message.get("headers", [])
-                    if k.lower()
-                    not in (
-                        b"access-control-allow-origin",
-                        b"access-control-allow-credentials",
-                    )
-                ]
-                headers.append((b"access-control-allow-origin", b"*"))
-                headers.append((b"access-control-allow-methods", b"GET, OPTIONS"))
-                message["headers"] = headers
-            await send(message)
-
-        await self.app(scope, receive, send_with_cors)
-
-
 # CORS (configurable)
 if os.getenv("ENABLE_CORS", "false").lower() == "true":
     origins_env = os.getenv("CORS_ALLOW_ORIGINS", "").strip()
@@ -110,9 +44,6 @@ if os.getenv("ENABLE_CORS", "false").lower() == "true":
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-# Public API middleware (must be added AFTER CORSMiddleware → runs as outer layer)
-app.add_middleware(_PublicAPICORSMiddleware)
 
 state = get_state()
 _cleanup_stop_event = None
