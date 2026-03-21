@@ -25,17 +25,25 @@ from .utils.database import create_all
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=log_level, format="%(asctime)s - %(levelname)s - %(message)s")
 
-app = FastAPI(title="MelodyHue API", version=os.getenv("APP_VERSION", "4.4.4"))
+app = FastAPI(title="MelodyHue API", version=os.getenv("APP_VERSION", "4.4.5"))
 
 # ── Public API CORS: /infos, /color, /overlay → Access-Control-Allow-Origin: * ──
-_PUBLIC_PREFIXES = ("/infos/", "/color/", "/overlay/")
+_PUBLIC_PREFIXES = ("/infos/", "/color/")
+
+
+def _is_public_path(path: str) -> bool:
+    """Match /infos/*, /color/*, and /overlay/* but NOT /overlays/*."""
+    if any(path.startswith(p) for p in _PUBLIC_PREFIXES):
+        return True
+    # /overlay/{id} (singular) but not /overlays/...
+    return path.startswith("/overlay/") and not path.startswith("/overlays/")
 
 
 class _PublicAPICORSMiddleware(BaseHTTPMiddleware):
     """Allow any origin on public read-only API endpoints."""
 
     async def dispatch(self, request: Request, call_next):  # type: ignore[override]
-        is_public = any(request.url.path.startswith(p) for p in _PUBLIC_PREFIXES)
+        is_public = _is_public_path(request.url.path)
 
         if is_public and request.method == "OPTIONS":
             response = Response(status_code=204)
