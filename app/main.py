@@ -3,6 +3,9 @@ import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 from .routes import (
     public,
     auth,
@@ -24,6 +27,33 @@ logging.basicConfig(level=log_level, format="%(asctime)s - %(levelname)s - %(mes
 
 app = FastAPI(title="MelodyHue API", version=os.getenv("APP_VERSION", "4.4.3"))
 
+# ── Public API CORS: /infos, /color, /overlay → Access-Control-Allow-Origin: * ──
+_PUBLIC_PREFIXES = ("/infos/", "/color/", "/overlay/")
+
+
+class _PublicAPICORSMiddleware(BaseHTTPMiddleware):
+    """Allow any origin on public read-only API endpoints."""
+
+    async def dispatch(self, request: Request, call_next):  # type: ignore[override]
+        is_public = any(request.url.path.startswith(p) for p in _PUBLIC_PREFIXES)
+
+        if is_public and request.method == "OPTIONS":
+            response = Response(status_code=204)
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Max-Age"] = "86400"
+            return response
+
+        response = await call_next(request)
+
+        if is_public:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+
+        return response
+
+
 # CORS (configurable)
 if os.getenv("ENABLE_CORS", "false").lower() == "true":
     origins_env = os.getenv("CORS_ALLOW_ORIGINS", "").strip()
@@ -44,6 +74,9 @@ if os.getenv("ENABLE_CORS", "false").lower() == "true":
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+# Public API middleware (must be added AFTER CORSMiddleware → runs as outer layer)
+app.add_middleware(_PublicAPICORSMiddleware)
 
 state = get_state()
 _cleanup_stop_event = None
