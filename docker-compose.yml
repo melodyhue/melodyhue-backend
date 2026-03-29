@@ -5,8 +5,6 @@ services:
       dockerfile: Dockerfile
     container_name: "${container_name}"
     restart: unless-stopped
-    ports:
-      - "8494:8494"
     environment:
       SECRET_KEY: "${SECRET_KEY}"
       ENABLE_CORS: "${ENABLE_CORS:-true}"
@@ -22,13 +20,20 @@ services:
       SMTP_PORT: "${SMTP_PORT:-}"
       SMTP_USER: "${SMTP_USER:-}"
       SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.melodyhue-backend.rule=Host(`${DOMAIN:-api.melodyhue.com}`)"
+      - "traefik.http.routers.melodyhue-backend.entrypoints=websecure"
+      - "traefik.http.routers.melodyhue-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.melodyhue-backend.loadbalancer.server.port=8494"
     volumes:
       - melodyhue_data:/home/melodyhue/data
     networks:
-      - melodyhue-network
+      - dokploy-network
 
 volumes:
   melodyhue_data:
 
 networks:
-  melodyhue-network: {}
+  dokploy-network:
+    external: true
