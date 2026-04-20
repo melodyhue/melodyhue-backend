@@ -9,9 +9,9 @@ cffi==2.0.0
 charset-normalizer==3.4.3
 click==8.3.0
 colorama==0.4.6
-cryptography==46.0.5
+cryptography==46.0.7
 dnspython==2.8.0
-ecdsa==0.19.1
+ecdsa==0.19.2
 email-validator==2.3.0
 fastapi==0.118.2
 greenlet==3.2.4
@@ -23,8 +23,8 @@ Jinja2==3.1.6
 Mako==1.3.10
 MarkupSafe==3.0.3
 mpegdash==0.4.0
-pillow==11.3.0
-pyasn1==0.6.2
+pillow==12.2.0
+pyasn1==0.6.3
 pycparser==2.23
 pydantic==2.12.0
 pydantic_core==2.41.1
@@ -34,7 +34,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-jose==3.5.0
 ratelimit==2.2.1
-requests==2.32.5
+requests==2.33.0
 rsa==4.9.1
 six==1.17.0
 sniffio==1.3.1
@@ -44,5 +44,5 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==2.6.3
 uvicorn==0.37.0
-Werkzeug==3.1.5
+Werkzeug==3.1.6
 websockets==12.0
