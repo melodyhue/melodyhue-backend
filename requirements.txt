@@ -13,7 +13,7 @@ cryptography==46.0.7
 dnspython==2.8.0
 ecdsa==0.19.2
 email-validator==2.3.0
-fastapi==0.118.2
+fastapi==0.120.1
 greenlet==3.2.4
 h11==0.16.0
 idna==3.10
