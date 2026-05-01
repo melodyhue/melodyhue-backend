@@ -20,12 +20,6 @@ services:
       SMTP_PORT: "${SMTP_PORT:-}"
       SMTP_USER: "${SMTP_USER:-}"
       SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.melodyhue-backend.rule=Host(`${DOMAIN:-api.melodyhue.com}`)"
-      - "traefik.http.routers.melodyhue-backend.entrypoints=websecure"
-      - "traefik.http.routers.melodyhue-backend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.melodyhue-backend.loadbalancer.server.port=8494"
     volumes:
       - melodyhue_data:/home/melodyhue/data
     networks:
