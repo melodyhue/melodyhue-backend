@@ -22,7 +22,7 @@ from .utils.database import create_all
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=log_level, format="%(asctime)s - %(levelname)s - %(message)s")
 
-app = FastAPI(title="MelodyHue API", version=os.getenv("APP_VERSION", "4.4.7"))
+app = FastAPI(title="Axioneer NowPlaying - API", version=os.getenv("APP_VERSION", "4.4.8"))
 
 # CORS (configurable)
 if os.getenv("ENABLE_CORS", "false").lower() == "true":

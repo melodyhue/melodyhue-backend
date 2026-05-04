@@ -230,7 +230,7 @@ class AuthController:
     def enable_2fa(self, db: Session, user: User) -> tuple[str, str]:
         secret = totp_generate_secret()
         otpauth = (
-            f"otpauth://totp/MelodyHue:{user.email}?secret={secret}&issuer=MelodyHue"
+            f"otpauth://totp/Axioneer NowPlaying:{user.email}?secret={secret}&issuer=Axioneer NowPlaying"
         )
         # Upsert
         tfa = db.query(TwoFA).filter(TwoFA.user_id == user.id).first()

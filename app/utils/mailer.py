@@ -12,8 +12,8 @@ def _smtp_settings():
     password = os.getenv("SMTP_PASSWORD")
     starttls = os.getenv("SMTP_STARTTLS", "true").lower() == "true"
     use_ssl = os.getenv("SMTP_SSL", "false").lower() == "true"
-    from_email = os.getenv("SMTP_FROM") or user or "no-reply@melodyhue.com"
-    from_name = os.getenv("SMTP_FROM_NAME", "MelodyHue")
+    from_email = os.getenv("SMTP_FROM") or user or "no-reply@nowplaying.axioneer.com"
+    from_name = os.getenv("SMTP_FROM_NAME", "Axioneer NowPlaying")
     return {
         "host": host,
         "port": port,
@@ -70,7 +70,7 @@ def build_password_reset_link(raw_token: str) -> str:
     """Construit l'URL de réinitialisation. Priorité:
     - PASSWORD_RESET_URL_BASE (ex: https://app/auth/reset?token=)
     - FRONTEND_URL + "/auth/reset?token="
-    - http://melodyhue.com/auth/reset?token=
+    - http://nowplaying.axioneer.com/auth/reset?token=
     """
     base = os.getenv("PASSWORD_RESET_URL_BASE")
     if not base:
@@ -80,7 +80,7 @@ def build_password_reset_link(raw_token: str) -> str:
                 fe = fe[:-1]
             base = f"{fe}/auth/reset?token="
         else:
-            base = "http://melodyhue.com/auth/reset?token="
+            base = "http://nowplaying.axioneer.com/auth/reset?token="
     return f"{base}{raw_token}"
 
 
@@ -88,7 +88,7 @@ def build_twofa_disable_link(raw_token: str) -> str:
     """Construit l'URL de désactivation 2FA. Priorité:
     - TWOFA_DISABLE_URL_BASE (ex: https://app/auth/2fa/disable?token=)
     - FRONTEND_URL + "/auth/2fa/disable?token="
-    - http://melodyhue.com/auth/2fa/disable?token=
+    - http://nowplaying.axioneer.com/auth/2fa/disable?token=
     """
     base = os.getenv("TWOFA_DISABLE_URL_BASE")
     if not base:
@@ -98,5 +98,5 @@ def build_twofa_disable_link(raw_token: str) -> str:
                 fe = fe[:-1]
             base = f"{fe}/auth/2fa/disable?token="
         else:
-            base = "http://melodyhue.com/auth/2fa/disable?token="
+            base = "http://nowplaying.axioneer.com/auth/2fa/disable?token="
     return f"{base}{raw_token}"

@@ -216,12 +216,12 @@ def forgot_password(body: ForgotPwdIn, db: Session = Depends(get_db)):
     subj = "Réinitialisation de votre mot de passe"
     txt = (
         "Bonjour,\n\n"
-        "Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte MelodyHue.\n"
+        "Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte Axioneer NowPlaying.\n"
         f"Cliquez sur ce lien pour réinitialiser votre mot de passe (valide 1h):\n{reset_link}\n\n"
         "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.\n"
     )
     html = (
-        f"<p>Bonjour,</p><p>Pour réinitialiser votre mot de passe MelodyHue, cliquez sur le lien ci-dessous (valide 1h):</p>"
+        f"<p>Bonjour,</p><p>Pour réinitialiser votre mot de passe Axioneer NowPlaying, cliquez sur le lien ci-dessous (valide 1h):</p>"
         f'<p><a href="{reset_link}">Réinitialiser mon mot de passe</a></p>'
         f"<p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>"
     )
@@ -280,12 +280,12 @@ def twofa_disable_request(
     subj = "Désactivation 2FA - Confirmation requise"
     txt = (
         "Bonjour,\n\n"
-        "Vous avez demandé la désactivation de la double authentification (2FA) sur votre compte MelodyHue.\n"
+        "Vous avez demandé la désactivation de la double authentification (2FA) sur votre compte Axioneer NowPlaying.\n"
         f"Si vous êtes à l'origine de cette demande, cliquez sur ce lien pour confirmer (valide 1h):\n{link}\n\n"
         "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.\n"
     )
     html = (
-        f"<p>Bonjour,</p><p>Vous avez demandé la désactivation de la double authentification (2FA) sur votre compte MelodyHue.</p>"
+        f"<p>Bonjour,</p><p>Vous avez demandé la désactivation de la double authentification (2FA) sur votre compte Axioneer NowPlaying.</p>"
         f"<p>Si vous êtes à l'origine de cette demande, cliquez sur le lien ci-dessous (valide 1h):</p>"
         f'<p><a href="{link}">Confirmer la désactivation 2FA</a></p>'
         f"<p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>"

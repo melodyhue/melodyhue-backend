@@ -15,10 +15,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
 
-EXPOSE 8765
+EXPOSE 8000
 
 # Variables runtime
 ENV HOST=0.0.0.0 \
-    PORT=8494
+    PORT=8000
 
-CMD ["python", "-m", "uvicorn", "app.asgi:app", "--host", "0.0.0.0", "--port", "8494"]
+CMD ["python", "-m", "uvicorn", "app.asgi:app", "--host", "0.0.0.0", "--port", "8000"]
